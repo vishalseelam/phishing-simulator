@@ -75,11 +75,21 @@ export default function AdminChat({ onUpdate }: AdminChatProps) {
     setIsLoading(true);
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+      
       const response = await fetch('/api/admin/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: input })
+        body: JSON.stringify({ message: input }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
 
       const data = await response.json();
 
@@ -92,19 +102,25 @@ export default function AdminChat({ onUpdate }: AdminChatProps) {
       const updatedMessages = [...newMessages, agentMessage];
       setMessages(updatedMessages);
       
-      // Save to localStorage
       localStorage.setItem('admin_chat_history', JSON.stringify(updatedMessages));
       
-      // Notify parent to refresh
       if (onUpdate) {
         onUpdate();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to send message:', error);
+      
+      let errorContent = '❌ Failed to process command. Please try again.';
+      
+      if (error.name === 'AbortError') {
+        errorContent = '⏱️ Request timed out. The campaign may still be processing - check the queue on the left.';
+      } else if (error.message) {
+        errorContent = `❌ Error: ${error.message}`;
+      }
       
       const errorMessage: Message = {
         role: 'agent',
-        content: '❌ Failed to process command. Please try again.',
+        content: errorContent,
         timestamp: new Date().toISOString()
       };
       

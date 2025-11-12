@@ -150,9 +150,9 @@ export default function Home() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
-              GhostEye v2
+              GhostEye
             </h1>
-            <p className="text-sm text-gray-500 mt-1">Multi-Conversation Phishing Orchestrator</p>
+            <p className="text-sm text-gray-500 mt-1">Multi-Conversation Phishing Simulation</p>
           </div>
           
           <div className="flex items-center gap-6">

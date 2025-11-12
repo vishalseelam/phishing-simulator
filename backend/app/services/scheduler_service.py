@@ -156,17 +156,12 @@ class SchedulerService:
         
         logger.info(f"cascade_triggered: conversation_id={conversation_id}")
         
-        # Load all pending messages (OTHER conversations)
         all_pending = await self._load_pending_messages()
-        
-        # Add reply message (NEW message to be created)
         all_messages = all_pending + [reply_message_data]
         
         # Load contexts
         contexts = await self._load_all_contexts()
         
-        # Mark this conversation as ACTIVE (critical!)
-        # Use simulation time if available
         if time_controller:
             current_time = await time_controller.get_current_time()
         else:
@@ -176,7 +171,6 @@ class SchedulerService:
         contexts[conversation_id]['is_active'] = True
         contexts[conversation_id]['last_reply_time'] = current_time.isoformat()
         
-        # Update in DB (is_active is computed from state, not stored)
         await db.update_conversation(
             conversation_id=UUID(conversation_id),
             state='active',
@@ -200,7 +194,6 @@ class SchedulerService:
             extra_delays=extra_delays
         )
         
-        # Split into NEW (reply) and EXISTING (others) messages
         reply_scheduled = None
         existing_scheduled = []
         
@@ -461,6 +454,12 @@ class SchedulerService:
                             dt = dt.replace(tzinfo=None)
                         history_times.append(dt.isoformat())
                 
+                reply_count_row = await conn.fetchrow("""
+                    SELECT COUNT(*) as count FROM messages
+                    WHERE conversation_id = $1 AND sender = 'employee'
+                """, row['id'])
+                reply_count = reply_count_row['count'] if reply_count_row else 0
+                
                 # Convert last times to naive
                 last_send = row['last_message_sent_at']
                 if last_send and hasattr(last_send, 'tzinfo') and last_send.tzinfo is not None:
@@ -476,6 +475,7 @@ class SchedulerService:
                     'message_history': history_times,
                     'last_send_time': last_send.isoformat() if last_send else None,
                     'last_reply_time': last_reply.isoformat() if last_reply else None,
+                    'reply_count': reply_count,
                     'learned_preferences': {
                         'timing_multiplier': row['learned_timing_multiplier'] or 1.0,
                         'preferred_hours': row['best_time_of_day_hours'] or []
@@ -605,7 +605,7 @@ class SchedulerService:
         if not message:
             return None
         
-        # Send message (mock for now, Twilio in production)
+        # Send message (simulated - would integrate with SMS gateway in production)
         logger.info(f"sending_message: id={message['id']}, to={message['phone_number']}")
         
         # Mark as sent

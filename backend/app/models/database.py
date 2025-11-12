@@ -534,7 +534,6 @@ class Database:
     ) -> List[Dict]:
         """Get success patterns for similar profiles."""
         # For now, get most recent/effective patterns
-        # TODO: Implement similarity matching
         async with self.pool.acquire() as conn:
             rows = await conn.fetch("""
                 SELECT * FROM success_patterns

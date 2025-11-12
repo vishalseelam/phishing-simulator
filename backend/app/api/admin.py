@@ -1,41 +1,17 @@
 """
 Admin API - System Control and Reset
+
+Note: The /chat endpoint is defined in main.py (uses orchestrator directly)
 """
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
 import logging
 
 from app.models.database import db
-import app.services.admin_agent as admin_agent_module
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
-
-
-class AdminChatRequest(BaseModel):
-    """Admin chat message."""
-    message: str
-    session_id: str = "default"
-
-
-@router.post("/chat")
-async def chat_with_admin(request: AdminChatRequest):
-    """Chat with admin agent."""
-    if not admin_agent_module.admin_agent:
-        raise HTTPException(status_code=503, detail="Admin agent not initialized")
-    
-    response = await admin_agent_module.admin_agent.process_command(
-        admin_message=request.message,
-        session_id=request.session_id
-    )
-    
-    return {
-        "success": True,
-        "message": response,
-        "data": {"session_id": request.session_id}
-    }
 
 
 @router.post("/reset")
