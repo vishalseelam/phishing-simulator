@@ -74,7 +74,7 @@ npm run dev
 
 ## 🎥 Demo Video
 
-[![GhostEye v2 Demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)][([https://www.youtube.com/watch?v=YOUR_VIDEO_ID](https://youtu.be/UjTYOOfABIs?si=AloUthRQN-QPS9gb))](https://youtu.be/pgGjxxIYd5I?si=TIwvZ8nU_gyX8ny7)
+[![GhostEye v2 Demo]https://youtu.be/pgGjxxIYd5I?si=TIwvZ8nU_gyX8ny7
 
 
 
